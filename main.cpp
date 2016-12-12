@@ -32,14 +32,19 @@ public:
 	}
 };
 
+// defragment memory function for contiguous memory schemes
+// returns time required to defragment memory.
 unsigned int defragMemory(std::vector<char>& memory) {
-	bool keepGoing = true;
-	unsigned int pindex = 0;
-	unsigned int numFramesMoved = 0;
+	bool keepGoing = true;	// tell function to continue
+	unsigned int pindex = 0;	// keeps track of the first period found
+	unsigned int numFramesMoved = 0;	// keeps track of number of frames moved
 	while (keepGoing) {
 		if (pindex >= memory.size()) {
+			// we have reached the end of memory, so stop
 			keepGoing = false;
 		} else if (memory[pindex] == '.') {
+			// we found a period
+			// search for the next letter and place it here
 			unsigned int i;
 			for (i = pindex; i < memory.size(); ++i ) {
 				if (memory[i] != '.') {
@@ -50,12 +55,17 @@ unsigned int defragMemory(std::vector<char>& memory) {
 				}
 			}
 
+			// if we failed to find a letter,
+			//	stop searching
 			if (i == memory.size()) {
 				keepGoing = false;
 			}
 		}
+		pindex++;
 	}
 
+	// return number of frames moved multiplied
+	//	by the amount of time required  to move each frame.
 	return numFramesMoved * t_memmove;
 }
 
@@ -188,14 +198,14 @@ int main(int argc, char* argv[]){
 void Contiguous_Next_Fit(std::vector<Process> processes){
 	int curTime = 0;
 	std::vector<char> memory(memSize, '.');
-	
+
 	//sort the process array
 	std::sort(processes.begin(), processes.end());
 
 	std::cout << "time 0ms: Simulator started (Contiguous -- Next-Fit)\n";
 
 	while(processes.size() > 0){
-		
+
 		//go through each process in the array
 		std::vector<Process>::iterator itr;
 
@@ -209,5 +219,5 @@ void Contiguous_Next_Fit(std::vector<Process> processes){
 		}
 
 	}
-	
+
 }
