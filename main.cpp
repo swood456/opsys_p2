@@ -693,6 +693,8 @@ void VirtualOPT(std::vector<int> pageRefs){
 							break;
 						}
 					}
+				} else {
+					break;
 				}
 			}
 		}
