@@ -666,6 +666,7 @@ void VirtualOPT(std::vector<int> pageRefs){
 	int faultCounter = 0;
 
 	for(unsigned int i = 0; i < pageRefs.size(); i++){
+		replaceIndex = 0;
 		furthestDistance = 0;
 		unsigned int j;
 
@@ -685,24 +686,24 @@ void VirtualOPT(std::vector<int> pageRefs){
 
 				break;
 			} else{
-				// if (virtualMemory[j]->page == pageRefs[i]) {
-				// 	break;
-				// }
-				if(virtualMemory[j]->page != pageRefs[i]){
-					for (unsigned int k = i + 1; k < pageRefs.size(); ++k) {
-						if (pageRefs[k] == virtualMemory[j]->page
-							&& (k-i > furthestDistance
-								|| k-i == furthestDistance
-								&& virtualMemory[j]->page < virtualMemory[replaceIndex]->page)
-							) {
-							furthestDistance = k - i;
-							replaceIndex = j;
-							k = pageRefs.size();
-						}
-					}
-				} else {
+				if (virtualMemory[j]->page == pageRefs[i]) {
 					break;
 				}
+				// if(virtualMemory[j]->page != pageRefs[i]){
+				// 	for (unsigned int k = i + 1; k < pageRefs.size(); ++k) {
+				// 		if (pageRefs[k] == virtualMemory[j]->page
+				// 			&& (k-i > furthestDistance
+				// 				|| k-i == furthestDistance
+				// 				&& virtualMemory[j]->page < virtualMemory[replaceIndex]->page)
+				// 			) {
+				// 			furthestDistance = k - i;
+				// 			replaceIndex = j;
+				// 			k = pageRefs.size();
+				// 		}
+				// 	}
+				// } else {
+				// 	break;
+				// }
 			}
 		}
 
@@ -710,9 +711,19 @@ void VirtualOPT(std::vector<int> pageRefs){
 			//the current page is not in the virtual memeory
 			//so page fault occurs
 
-			// for (j = 0; j < frameSize; ++j) {
-			//
-			// }
+			for (j = 0; j < frameSize; ++j) {
+				unsigned int k;
+				for (k = 0; k + i + 1 < pageRefs.size(); ++k) {
+					if (virtualMemory[j]->page == pageRefs[k + i + 1]) {
+						break;
+					}
+				}
+
+				if (furthestDistance < k || (furthestDistance == k && virtualMemory[j] < virtualMemory[replaceIndex])) {
+					furthestDistance = k;
+					replaceIndex = j;
+				}
+			}
 
 			//replace the thing with the index we found
 			int victimPage = virtualMemory[replaceIndex]->page;
