@@ -7,6 +7,23 @@
 
 const int t_memmove = 1; //time to move 1 frame of memory in defrag
 
+class Process
+{
+public:
+	Process(char name_, int numFrames_, std::vector<std::pair<int, int > > arrivalRunTimes_){
+		name = name_;
+		numFrames = numFrames_;
+		arrivalRunTimes = arrivalRunTimes_;
+	}
+
+
+	/* data */
+	char name;
+	int numFrames;
+	std::vector<std::pair<int, int> > arrivalRunTimes;
+};
+
+
 void printMemoryDiagram(std::vector<char> memory){
 	//first, print the top line
 
@@ -50,12 +67,15 @@ int main(int argc, char* argv[]){
 
 	char processName;
 	int numMemFrames;
-	//std::vector<std::pair<int, int> > arrivalRunTimes (numProcesses);
+	
+
+	std::vector<Process> processes;
 
 	while(std::getline(inFile, line)){
 		if(line[0] != '#' && line[0] != ' ' && line[0] != '	' && line[0] != '\n' && line[0] != '\0'){
 			
 			//std::cout << "got line " << line << std::endl;
+			std::vector<std::pair<int, int> > arrivalRunTimes;
 			
 			processName = line[0];
 
@@ -66,7 +86,7 @@ int main(int argc, char* argv[]){
 
 			numMemFrames = atoi(token);
 
-			std:: cout << "process name " << processName << " numMemFrames = " << numMemFrames << std::endl;
+			//std:: cout << "process name " << processName << " numMemFrames = " << numMemFrames << std::endl;
 
 			int arrivalTime;
 			int runTime;
@@ -78,14 +98,25 @@ int main(int argc, char* argv[]){
 				token = strtok(NULL, " /");
 				runTime = atoi(token);
 
-				std::cout << " arrival time: " << arrivalTime << " run time: " << runTime << std::endl;
+				//std::cout << " arrival time: " << arrivalTime << " run time: " << runTime << std::endl;
+				arrivalRunTimes.push_back(std::make_pair(arrivalTime, runTime));
 
 
 				token = strtok(NULL, " /");
 
 			}
+			//Process p
+			processes.push_back(Process(processName, numMemFrames, arrivalRunTimes));
 
 		}
+	}
+	//checking
+	for(int i = 0; i < processes.size(); i++){
+		std::cout << processes[i].name << " " << processes[i].numFrames << " ";
+		for(int j = 0; j < processes[i].arrivalRunTimes.size(); j++){
+			std::cout << processes[i].arrivalRunTimes[j].first << "/" << processes[i].arrivalRunTimes[j].second << " ";
+		}
+		std::cout << '\n';
 	}
 
 
