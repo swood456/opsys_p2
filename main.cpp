@@ -31,7 +31,32 @@ public:
 	}
 };
 
+unsigned int defragMemory(std::vector<char>& memory) {
+	bool keepGoing = true;
+	unsigned int pindex = 0;
+	unsigned int numFramesMoved = 0;
+	while (keepGoing) {
+		if (pindex >= memory.size()) {
+			keepGoing = false;
+		} else if (memory[pindex] == '.') {
+			unsigned int i;
+			for (i = pindex; i < memory.size(); ++i ) {
+				if (memory[i] != '.') {
+					memory[pindex] = memory[i];
+					memory[i] = '.';
+					numFramesMoved++;
+					break;
+				}
+			}
 
+			if (i == memory.size()) {
+				keepGoing = false;
+			}
+		}
+	}
+
+	return numFramesMoved * t_memmove;
+}
 
 void Contiguous_Next_Fit(std::vector<Process>);
 
@@ -67,7 +92,7 @@ int main(int argc, char* argv[]){
 		fprintf(stderr, "ERROR: invalid file for Contiguous and Non-Contiguous memory\n");
 		return EXIT_FAILURE;
 	}
-	
+
 
 	std::string line;
 
@@ -78,16 +103,16 @@ int main(int argc, char* argv[]){
 
 	char processName;
 	int numMemFrames;
-	
+
 
 	std::vector<Process> processes;
 
 	while(std::getline(inFile, line)){
 		if(line[0] != '#' && line[0] != ' ' && line[0] != '	' && line[0] != '\n' && line[0] != '\0'){
-			
+
 			//std::cout << "got line " << line << std::endl;
 			std::vector<std::pair<int, int> > arrivalRunTimes;
-			
+
 			processName = line[0];
 
 			line.erase(0,2);
