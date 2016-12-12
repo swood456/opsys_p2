@@ -70,7 +70,7 @@ unsigned int defragMemory(std::vector<char>& memory, std::list<char>& procsMoved
 
 	// return number of frames moved multiplied
 	//	by the amount of time required  to move each frame.
-	return numFramesMoved * t_memmove;
+	return numFramesMoved;
 }
 
 void Contiguous_Next_Fit(std::list<Process>);
@@ -93,9 +93,6 @@ void printMemoryDiagram(std::vector<char> memory){
 }
 
 int main(int argc, char* argv[]){
-	//printf("Hello world\n");
-	std::cout << "hello world" <<std::endl;
-
 	//check command line arguments
 	//will be in form of ./a.out memory_management_file virtual_file
 
@@ -200,7 +197,7 @@ int main(int argc, char* argv[]){
 }
 
 int findHomeForNextFit(int startLoc, int numFrames, std::vector<char> memory){
-	std::cout << "    starting find home\n";
+	//std::cout << "    starting find home\n";
 	for(int i = startLoc; i < memSize; i++){
 		if(memory[i] == '.'){
 			//see if we have a large enough block of memory to save this process
@@ -211,7 +208,7 @@ int findHomeForNextFit(int startLoc, int numFrames, std::vector<char> memory){
 				j++;
 				blockSize++;
 			}
-			std::cout << "blockSize = " << blockSize << "starting at index i=" << i << " numFrames=" << numFrames << std::endl;
+			//std::cout << "blockSize = " << blockSize << "starting at index i=" << i << " numFrames=" << numFrames << std::endl;
 			if(blockSize >= numFrames){
 				//we found a match
 				return i;
@@ -226,13 +223,14 @@ int findHomeForNextFit(int startLoc, int numFrames, std::vector<char> memory){
 	for(int i = 0; i < startLoc; i++){
 		if(memory[i] == '.'){
 			//see if we have a large enough block of memory to save this process
-			int blockSize = 1;
+			int blockSize = 0;
 
 			int j = i;
 			while(memory[j] == '.' && j < memSize){
 				j++;
 				blockSize++;
 			}
+			//std::cout << "     blockSize = " << blockSize << "starting at index i=" << i << " numFrames=" << numFrames << std::endl;
 
 			if(blockSize >= numFrames){
 				//we found a match
@@ -250,6 +248,14 @@ int findHomeForNextFit(int startLoc, int numFrames, std::vector<char> memory){
 void storeProcess(int startLoc, int numFrames, char processName, std::vector<char>& memory){
 	for(int i = 0; i < numFrames; i++){
 		memory[startLoc + i] = processName;
+	}
+}
+
+void removeFromMemory(char processName, std::vector<char>& memory){
+	for(int i = 0; i < memSize; i++){
+		if(memory[i] == processName){
+			memory[i] = '.';
+		}
 	}
 }
 
@@ -274,6 +280,10 @@ void Contiguous_Next_Fit(std::list<Process> processes){
 
 		for(itr = processes.begin(); itr != processes.end(); itr++){
 			//determine if this processes needs something
+
+			//////////
+			//ARIVAL//
+			//////////
 			if(itr->arrivalRunTimes.front().first == curTime){
 
 				//announce that a process is arriving
@@ -282,6 +292,7 @@ void Contiguous_Next_Fit(std::list<Process> processes){
 				if(itr->numFrames > freeMemory){
 					//there is not enough memory for this process no matter what
 					std::cout << "time " << curTime + defragTime << "ms: Cannot place process " << itr->name << " -- skipped!\n";
+					printMemoryDiagram(memory);
 					itr->arrivalRunTimes.pop_front();
 					if(itr->arrivalRunTimes.size() == 0){
 						//remove this process since it is now done
@@ -291,7 +302,7 @@ void Contiguous_Next_Fit(std::list<Process> processes){
 
 				} else{
 					//determine if there is enough memory in a single block for this thing
-					std::cout << "   startloc: " << lastSaved << std::endl; 
+					//std::cout << "   startloc: " << lastSaved << std::endl; 
 					int storeLoc = findHomeForNextFit(lastSaved, itr->numFrames, memory);
 
 
@@ -299,13 +310,26 @@ void Contiguous_Next_Fit(std::list<Process> processes){
 						std::cout << "time " << curTime + defragTime << "ms: Cannot place process "<< itr->name << " -- starting defragmentation\n";
 						//defrag
 						std::list<char> processesMoved;
-						unsigned int numMoves = defragMemory(memory);
+						unsigned int numMoves = defragMemory(memory, processesMoved);
 
 						//update timeing for everything
 						defragTime += numMoves * t_memmove;
 
 						//set the store loc to the new thing
-						std::cout << "time "<< curTime + defragTime << "ms: Defragmentation complete (moved " << itr->name << " frames: B, C, D, E, F)\n";
+						std::cout << "time "<< curTime + defragTime << "ms: Defragmentation complete (moved " << numMoves << " frames: ";
+						std::list<char>::iterator listItr = processesMoved.begin();
+						std::cout << *listItr;
+						listItr++;
+
+						for( ; listItr != processesMoved.end(); listItr++){
+							std::cout << ", " << *listItr;
+						}
+
+						std::cout << ")\n";
+
+						printMemoryDiagram(memory);
+
+						storeLoc = memSize - freeMemory;
 
 					}
 
@@ -322,10 +346,34 @@ void Contiguous_Next_Fit(std::list<Process> processes){
 
 				}
 
-				//do the arrival stuff
+			}
+
+			////////////
+			//FINISHES//
+			////////////
+			else if(curTime == itr->arrivalRunTimes.front().first + itr->arrivalRunTimes.front().second){
+				//the process is done with its rund
+
+				//first remove from memory
+				removeFromMemory(itr->name, memory);
+
+				//print that we removed it from memory
+				std::cout << "time " << curTime + defragTime << "ms: Process "<<itr->name<<" removed:\n";
+				printMemoryDiagram(memory);
+				freeMemory += itr->numFrames;
+
+				//remove from the list of arrivaltimethings, and remove the process if that list is now empty
+				itr->arrivalRunTimes.pop_front();
+				if(itr->arrivalRunTimes.size() == 0){
+					processes.erase(itr);
+					itr--;
+				}
+
 			}
 		}
 
+		curTime++;
 	}
 
+	std::cout << "time " << curTime + defragTime - 1 << "ms: Simulator ended (Contiguous -- Next-Fit)\n";
 }
