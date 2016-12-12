@@ -5,6 +5,7 @@
 #include <string>
 #include <cstring>
 #include <algorithm>
+#include <list>
 
 const int t_memmove = 1; //time to move 1 frame of memory in defrag
 const int memSize = 256; //size of the memory block
@@ -15,7 +16,7 @@ const int memSize = 256; //size of the memory block
 class Process
 {
 public:
-	Process(char name_, int numFrames_, std::vector<std::pair<int, int > > arrivalRunTimes_){
+	Process(char name_, int numFrames_, std::list<std::pair<int, int > > arrivalRunTimes_){
 		name = name_;
 		numFrames = numFrames_;
 		arrivalRunTimes = arrivalRunTimes_;
@@ -25,7 +26,7 @@ public:
 	/* data */
 	char name;
 	int numFrames;
-	std::vector<std::pair<int, int> > arrivalRunTimes;
+	std::list<std::pair<int, int> > arrivalRunTimes;
 
 	bool operator < (const Process& str) const{
 		return name < str.name;
@@ -59,7 +60,7 @@ unsigned int defragMemory(std::vector<char>& memory) {
 	return numFramesMoved * t_memmove;
 }
 
-void Contiguous_Next_Fit(std::vector<Process>);
+void Contiguous_Next_Fit(std::list<Process>);
 
 void printMemoryDiagram(std::vector<char> memory){
 	//first, print the top line
@@ -75,7 +76,7 @@ void printMemoryDiagram(std::vector<char> memory){
 		std::cout << memory[i];
 	}
 
-	std::cout << "\n================================";
+	std::cout << "\n================================\n";
 }
 
 int main(int argc, char* argv[]){
@@ -106,13 +107,13 @@ int main(int argc, char* argv[]){
 	int numMemFrames;
 
 
-	std::vector<Process> processes;
+	std::list<Process> processes;
 
 	while(std::getline(inFile, line)){
 		if(line[0] != '#' && line[0] != ' ' && line[0] != '	' && line[0] != '\n' && line[0] != '\0'){
 
 			//std::cout << "got line " << line << std::endl;
-			std::vector<std::pair<int, int> > arrivalRunTimes;
+			std::list<std::pair<int, int> > arrivalRunTimes;
 
 			processName = line[0];
 
@@ -185,24 +186,122 @@ int main(int argc, char* argv[]){
 	return EXIT_SUCCESS;
 }
 
-void Contiguous_Next_Fit(std::vector<Process> processes){
+int findHomeForNextFit(int startLoc, int numFrames, std::vector<char> memory){
+	for(int i = startLoc; i < memSize; i++){
+		if(memory[i] == '.'){
+			//see if we have a large enough block of memory to save this process
+			int blockSize = 1;
+
+			int j = i;
+			while(j == '.' && j < memSize){
+				j++;
+				blockSize++;
+			}
+
+			if(blockSize >= numFrames){
+				//we found a match
+				return i;
+			} else{
+				i = j;
+			}
+
+
+		}
+	}
+
+	for(int i = 0; i < startLoc; i++){
+		if(memory[i] == '.'){
+			//see if we have a large enough block of memory to save this process
+			int blockSize = 1;
+
+			int j = i;
+			while(j == '.' && j < memSize){
+				j++;
+				blockSize++;
+			}
+
+			if(blockSize >= numFrames){
+				//we found a match
+				return i;
+			} else{
+				i = j;
+			}
+
+
+		}
+	}
+	return -1;
+}
+
+void storeProcess(int startLoc, int numFrames, char processName, std::vector<char>& memory){
+	for(int i = 0; i < numFrames; i++){
+		memory[startLoc + i] = processName;
+	}
+}
+
+void Contiguous_Next_Fit(std::list<Process> processes){
 	int curTime = 0;
 	std::vector<char> memory(memSize, '.');
-	
+	int freeMemory = memSize;
+	int lastSaved = 0;
+	int defragTime = 0;
+
 	//sort the process array
-	std::sort(processes.begin(), processes.end());
+	//std::sort(processes.begin(), processes.end());
+	processes.sort();
 
 	std::cout << "time 0ms: Simulator started (Contiguous -- Next-Fit)\n";
 
 	while(processes.size() > 0){
 		
 		//go through each process in the array
-		std::vector<Process>::iterator itr;
+		std::list<Process>::iterator itr;
 
 		for(itr = processes.begin(); itr != processes.end(); itr++){
 			//determine if this processes needs something
-			if(itr->arrivalRunTimes[0].first == curTime){
+			if(itr->arrivalRunTimes.front().first == curTime){
+
+				//announce that a process is arriving
+				std::cout << "time " << curTime + defragTime<< "ms: Process " << itr->name << " arrived (requires " << itr->numFrames << " frames)\n";
 				//process arriving
+				if(itr->numFrames > freeMemory){
+					//there is not enough memory for this process no matter what
+					std::cout << "time " << curTime + defragTime << "ms: Cannot place process " << itr->name << " -- skipped!\n";
+					itr->arrivalRunTimes.pop_front();
+					if(itr->arrivalRunTimes.size() == 0){
+						//remove this process since it is now done
+						processes.erase(itr);
+						itr--;
+					}
+
+				} else{
+					//determine if there is enough memory in a single block for this thing
+					int storeLoc = findHomeForNextFit(lastSaved, itr->numFrames, memory);
+
+
+					if(storeLoc == -1){
+						//defrag
+						unsigned int numMoves = defragMemory(memory);
+
+						//update timeing for everything
+						defragTime += numMoves * t_memmove;
+
+						//set the store loc to the new thing
+
+					}
+
+					//store the process
+					storeProcess(storeLoc, itr->numFrames, itr->name, memory);
+					lastSaved = storeLoc + itr->numFrames;
+
+					//print to the world that things have been saved
+					std::cout << "time " << curTime + defragTime << "ms: Placed process " << itr->name << ":\n";
+					printMemoryDiagram(memory);
+
+					freeMemory -= itr->numFrames;
+
+
+				}
 
 				//do the arrival stuff
 			}
