@@ -187,6 +187,7 @@ unsigned int defragMemory(std::vector<char>& memory, std::list<char>& procsMoved
 void Contiguous_Next_Fit(std::list<Process>);
 void Contiguous_Best_Fit(std::list<Process>);
 void Contiguous_Worst_Fit(std::list<Process>);
+void NonContiguous(std::list<Process>);
 
 void printMemoryDiagram(std::vector<char> memory){
 	//first, print the top line
@@ -306,6 +307,7 @@ int main(int argc, char* argv[]){
 	}*/
 
 	//Non-contiguous Memory Management
+		NonContiguous(processes);
 
 
 
@@ -461,4 +463,98 @@ void Contiguous_Best_Fit(std::list<Process> processes){
 void Contiguous_Worst_Fit(std::list<Process> processes) {
 	struct FindHomeForWorstFit fhfwf;
 	SimulateContiguous(processes, fhfwf);
+}
+
+
+void storeProcess(int numFrames, char processName, std::vector<char>& memory) {
+	for (int i=0; i<memSize; i++) {
+		if (memory[i] == '.' && numFrames > 0) {
+			memory[i] = processName;
+			numFrames--;
+		}
+	}
+}
+
+void NonContiguous(std::list<Process> processes){
+	int curTime = 0;
+	std::vector<char> memory(memSize, '.');
+	int freeMemory = memSize;
+
+
+	//sort the process array
+	//std::sort(processes.begin(), processes.end());
+	processes.sort();
+
+	std::cout << "time 0ms: Simulator started (Non-contiguous)\n";
+
+	while(processes.size() > 0){
+
+		//go through each process in the array
+		std::list<Process>::iterator itr;
+
+		for(itr = processes.begin(); itr != processes.end(); itr++){
+			//determine if this processes needs something
+
+			//////////
+			//ARIVAL//
+			//////////
+			if(itr->arrivalRunTimes.front().first == curTime){
+
+				//announce that a process is arriving
+				std::cout << "time " << curTime << "ms: Process " << itr->name << " arrived (requires " << itr->numFrames << " frames)\n";
+				//process arriving
+				if(itr->numFrames > freeMemory){
+					//there is not enough memory for this process no matter what
+					std::cout << "time " << curTime << "ms: Cannot place process " << itr->name << " -- skipped!\n";
+					printMemoryDiagram(memory);
+					itr->arrivalRunTimes.pop_front();
+					if(itr->arrivalRunTimes.size() == 0){
+						//remove this process since it is now done
+						processes.erase(itr);
+						itr--;
+					}
+
+				} else{
+					//break up storing the process in wherever it fits
+					storeProcess(itr->numFrames, itr->name, memory);
+
+					//print to the world that things have been saved
+					std::cout << "time " << curTime << "ms: Placed process " << itr->name << ":\n";
+					printMemoryDiagram(memory);
+
+					freeMemory -= itr->numFrames;
+
+
+				}
+
+			}
+
+			////////////
+			//FINISHES//
+			////////////
+			else if(curTime == itr->arrivalRunTimes.front().first + itr->arrivalRunTimes.front().second){
+				//the process is done with its rund
+
+				//first remove from memory
+				removeFromMemory(itr->name, memory);
+
+				//print that we removed it from memory
+				std::cout << "time " << curTime << "ms: Process "<<itr->name<<" removed:\n";
+				printMemoryDiagram(memory);
+				freeMemory += itr->numFrames;
+
+				//remove from the list of arrivaltimethings, and remove the process if that list is now empty
+				itr->arrivalRunTimes.pop_front();
+				if(itr->arrivalRunTimes.size() == 0){
+					processes.erase(itr);
+					itr--;
+				}
+
+			}
+		}
+
+		curTime++;
+	}
+
+	std::cout << "time " << curTime - 1 << "ms: Simulator ended (Non-contiguous)\n";
 }
