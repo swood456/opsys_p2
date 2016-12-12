@@ -654,6 +654,7 @@ void VirtualLRU(std::vector<int> pageRefs){
 	std::cout << "End of LRU simulation ("<< faultCounter << " page faults)\n";
 }
 
+// simulates virtual memory with optimal strategy (forward-looking)
 void VirtualOPT(std::vector<int> pageRefs){
 
 	std::cout << "Simulating OPT with fixed frame size of " << frameSize << std::endl;
@@ -673,8 +674,7 @@ void VirtualOPT(std::vector<int> pageRefs){
 		//see if the current thing is already in there
 		for(j = 0; j < frameSize; j++){
 			if(virtualMemory[j] == NULL){
-
-
+				// this spot is empty, so put it here and call a page faultCounter
 
 				virtualMemory[j] = new VirtualFrame(pageRefs[i], 0);
 
@@ -686,24 +686,11 @@ void VirtualOPT(std::vector<int> pageRefs){
 
 				break;
 			} else{
+				// this spot is not empty
+				//	check if it's the same page, if yes then break.
 				if (virtualMemory[j]->page == pageRefs[i]) {
 					break;
 				}
-				// if(virtualMemory[j]->page != pageRefs[i]){
-				// 	for (unsigned int k = i + 1; k < pageRefs.size(); ++k) {
-				// 		if (pageRefs[k] == virtualMemory[j]->page
-				// 			&& (k-i > furthestDistance
-				// 				|| k-i == furthestDistance
-				// 				&& virtualMemory[j]->page < virtualMemory[replaceIndex]->page)
-				// 			) {
-				// 			furthestDistance = k - i;
-				// 			replaceIndex = j;
-				// 			k = pageRefs.size();
-				// 		}
-				// 	}
-				// } else {
-				// 	break;
-				// }
 			}
 		}
 
@@ -711,6 +698,8 @@ void VirtualOPT(std::vector<int> pageRefs){
 			//the current page is not in the virtual memeory
 			//so page fault occurs
 
+			// run through the virtual memory to see which page will not be used
+			//	for the longest time.
 			for (j = 0; j < frameSize; ++j) {
 				unsigned int k;
 				for (k = 0; k + i + 1 < pageRefs.size(); ++k) {
