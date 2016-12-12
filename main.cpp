@@ -65,6 +65,39 @@ struct FindHomeForNextFit {
 	}
 };
 
+struct FindHomeForBestFit {
+	std::string name() {
+		return "Best-Fit";
+	}
+
+	int operator() (int numFrames, std::vector<char> memory){
+		int minBlockSize = 0;  //holds the smallest size of free partition
+		int startLoc = -1;
+		for (int i=0; i<memSize; i++) {
+			//if find a '.' determine the size of that free parititon block
+			if (memory[i] == '.') {
+				int blockSize = 0;
+				int j = i;
+
+				while ((memory[j] == '.') && (j < memSize)) {
+					j++;
+					blockSize++;
+				}
+
+				//if the process fits in this block and its size is smaller than what is already there then use this block
+				if ( ((minBlockSize == 0) || (minBlockSize > blockSize)) && blockSize >= numFrames) {
+					minBlockSize = blockSize;
+					startLoc = j - blockSize;
+				}
+
+				i = j;
+			}
+		}
+		
+		return startLoc;
+	}
+};
+
 class Process
 {
 public:
@@ -250,83 +283,6 @@ int main(int argc, char* argv[]){
 	return EXIT_SUCCESS;
 }
 
-/*  Function that finds the location to place the process using the Best Fit model
-	Places the process in the smallest free partition available  */
-int findHomeForBestFit(int numFrames, std::vector<char> memory) {
-	int minBlockSize = 0;  //holds the smallest size of free partition
-	int startLoc = -1;
-	for (int i=0; i<memSize; i++) {
-		//if find a '.' determine the size of that free parititon block
-		if (memory[i] == '.') {
-			int blockSize = 0;
-			int j = i;
-
-			while ((memory[j] == '.') && (j < memSize)) {
-				j++;
-				blockSize++;
-			}
-
-			if ( ((minBlockSize == 0) || (minBlockSize > blockSize)) && blockSize >= numFrames) {
-				minBlockSize = blockSize;
-				startLoc = j - blockSize;
-			}
-
-			i = j;
-		}
-	}
-	
-	return startLoc;
-}
-
-int findHomeForNextFit(int startLoc, int numFrames, std::vector<char> memory){
-	//std::cout << "    starting find home\n";
-	for(int i = startLoc; i < memSize; i++){
-		if(memory[i] == '.'){
-			//see if we have a large enough block of memory to save this process
-			int blockSize = 0;
-
-			int j = i;
-			while(memory[j] == '.' && j < memSize){
-				j++;
-				blockSize++;
-			}
-			//std::cout << "blockSize = " << blockSize << "starting at index i=" << i << " numFrames=" << numFrames << std::endl;
-			if(blockSize >= numFrames){
-				//we found a match
-				return i;
-			} else{
-				i = j;
-			}
-
-
-		}
-	}
-
-	for(int i = 0; i < startLoc; i++){
-		if(memory[i] == '.'){
-			//see if we have a large enough block of memory to save this process
-			int blockSize = 0;
-
-			int j = i;
-			while(memory[j] == '.' && j < memSize){
-				j++;
-				blockSize++;
-			}
-			//std::cout << "     blockSize = " << blockSize << "starting at index i=" << i << " numFrames=" << numFrames << std::endl;
-
-			if(blockSize >= numFrames){
-				//we found a match
-				return i;
-			} else{
-				i = j;
-			}
-
-
-		}
-	}
-	return -1;
-}
-
 void storeProcess(int startLoc, int numFrames, char processName, std::vector<char>& memory){
 	for(int i = 0; i < numFrames; i++){
 		memory[startLoc + i] = processName;
@@ -468,119 +424,6 @@ void Contiguous_Next_Fit(std::list<Process> processes) {
 
 
 void Contiguous_Best_Fit(std::list<Process> processes){
-	int curTime = 0;
-	std::vector<char> memory(memSize, '.');
-	int freeMemory = memSize;
-	// int lastSaved = 0;
-	int defragTime = 0;
-
-
-	//sort the process array
-	//std::sort(processes.begin(), processes.end());
-	processes.sort();
-
-	std::cout << "time 0ms: Simulator started (Contiguous -- Best-Fit)\n";
-
-	while(processes.size() > 0){
-
-		//go through each process in the array
-		std::list<Process>::iterator itr;
-
-		for(itr = processes.begin(); itr != processes.end(); itr++){
-			//determine if this processes needs something
-
-			//////////
-			//ARIVAL//
-			//////////
-			if(itr->arrivalRunTimes.front().first == curTime){
-
-				//announce that a process is arriving
-				std::cout << "time " << curTime + defragTime<< "ms: Process " << itr->name << " arrived (requires " << itr->numFrames << " frames)\n";
-				//process arriving
-				if(itr->numFrames > freeMemory){
-					//there is not enough memory for this process no matter what
-					std::cout << "time " << curTime + defragTime << "ms: Cannot place process " << itr->name << " -- skipped!\n";
-					printMemoryDiagram(memory);
-					itr->arrivalRunTimes.pop_front();
-					if(itr->arrivalRunTimes.size() == 0){
-						//remove this process since it is now done
-						processes.erase(itr);
-						itr--;
-					}
-
-				} else{
-					//determine if there is enough memory in a single block for this thing
-					//std::cout << "   startloc: " << lastSaved << std::endl; 
-					int storeLoc = findHomeForBestFit(itr->numFrames, memory);
-
-
-					if(storeLoc == -1){
-						std::cout << "time " << curTime + defragTime << "ms: Cannot place process "<< itr->name << " -- starting defragmentation\n";
-						//defrag
-						std::list<char> processesMoved;
-						unsigned int numMoves = defragMemory(memory, processesMoved);
-
-						//update timeing for everything
-						defragTime += numMoves * t_memmove;
-
-						//set the store loc to the new thing
-						std::cout << "time "<< curTime + defragTime << "ms: Defragmentation complete (moved " << numMoves << " frames: ";
-						std::list<char>::iterator listItr = processesMoved.begin();
-						std::cout << *listItr;
-						listItr++;
-
-						for( ; listItr != processesMoved.end(); listItr++){
-							std::cout << ", " << *listItr;
-						}
-
-						std::cout << ")\n";
-
-						printMemoryDiagram(memory);
-
-						storeLoc = memSize - freeMemory;
-
-					}
-
-					//store the process
-					storeProcess(storeLoc, itr->numFrames, itr->name, memory);
-
-					//print to the world that things have been saved
-					std::cout << "time " << curTime + defragTime << "ms: Placed process " << itr->name << ":\n";
-					printMemoryDiagram(memory);
-
-					freeMemory -= itr->numFrames;
-
-
-				}
-
-			}
-
-			////////////
-			//FINISHES//
-			////////////
-			else if(curTime == itr->arrivalRunTimes.front().first + itr->arrivalRunTimes.front().second){
-				//the process is done with its rund
-
-				//first remove from memory
-				removeFromMemory(itr->name, memory);
-
-				//print that we removed it from memory
-				std::cout << "time " << curTime + defragTime << "ms: Process "<<itr->name<<" removed:\n";
-				printMemoryDiagram(memory);
-				freeMemory += itr->numFrames;
-
-				//remove from the list of arrivaltimethings, and remove the process if that list is now empty
-				itr->arrivalRunTimes.pop_front();
-				if(itr->arrivalRunTimes.size() == 0){
-					processes.erase(itr);
-					itr--;
-				}
-
-			}
-		}
-
-		curTime++;
-	}
-
-	std::cout << "time " << curTime + defragTime - 1 << "ms: Simulator ended (Contiguous -- Best-Fit)\n";
+	struct FindHomeForBestFit fhfbf;
+	SimulateContiguous(processes, fhfbf);
 }
