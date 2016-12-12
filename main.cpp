@@ -7,8 +7,11 @@
 #include <algorithm>
 #include <list>
 
+#include <stdio.h>
+
 const int t_memmove = 1; //time to move 1 frame of memory in defrag
 const int memSize = 256; //size of the memory block
+const int frameSize = 3;
 
 struct FindHomeForWorstFit {
 	std::string name() {
@@ -139,6 +142,16 @@ public:
 	}
 };
 
+class VirtualFrame{
+public:
+	VirtualFrame(int page_, int count_){
+		page = page_;
+		counter = count_;
+	}
+	int page;
+	int counter;
+};
+
 // defragment memory function for contiguous memory schemes
 // 	returns number of processes moved
 //	 as well as a list of processes moved (passed by reference)
@@ -186,6 +199,8 @@ void Contiguous_Best_Fit(std::list<Process>);
 void Contiguous_Worst_Fit(std::list<Process>);
 void NonContiguous(std::list<Process>);
 
+
+void VirtualLRU(std::vector<int>);
 void printMemoryDiagram(std::vector<char> memory){
 	//first, print the top line
 
@@ -264,6 +279,27 @@ int main(int argc, char* argv[]){
 		}
 	}
 
+	inFile.close();
+
+	//read input from virtual input file
+	inFile.open(argv[2]);
+	if(!inFile){
+		fprintf(stderr, "ERROR: invalid file for Virtual memory\n");
+		return EXIT_FAILURE;
+	}
+
+	//get that file shit swaggie
+	std::vector<int> virtualReferences;
+	std::getline(inFile, line);
+	//test print xd
+	char * token = strtok(const_cast<char*>(line.c_str()), " ");
+	while(token != NULL){
+		virtualReferences.push_back(atoi(token));
+		token = strtok(NULL, " ");
+	}
+
+
+
 	//notes start on 11-14
 
 	//do Contiguous Memory Management
@@ -282,6 +318,7 @@ int main(int argc, char* argv[]){
 		NonContiguous(processes);
 
 	//virtual memory
+		VirtualLRU(virtualReferences);
 
 	return EXIT_SUCCESS;
 }
@@ -526,4 +563,90 @@ void NonContiguous(std::list<Process> processes){
 	}
 
 	std::cout << "time " << curTime - 1 << "ms: Simulator ended (Non-contiguous)\n";
+}
+void printVirtualMemory(std::vector<VirtualFrame*> virtualMemory){
+	std::cout << "[mem:";
+	for(int i = 0; i < frameSize; i++){
+		if(virtualMemory[i] == NULL){
+			std::cout << " .";
+		} else{
+			
+			std::cout << " " <<virtualMemory[i]->page;
+		}
+	}
+
+	std::cout << "]";
+
+}
+
+void VirtualLRU(std::vector<int> pageRefs){
+
+	std::cout << "Simulating LRU with fixed frame size of " << frameSize << std::endl;
+	
+	std::vector<VirtualFrame*> virtualMemory (frameSize, NULL);
+
+	int replaceIndex;
+	int furthestDistance;
+
+	int faultCounter = 0;
+
+	for(unsigned int i = 0; i < pageRefs.size(); i++){
+
+		//update time thing
+		for(int k = 0; k < frameSize; k++){
+			if(virtualMemory[k] != NULL){
+				virtualMemory[k]->counter++;
+			}
+		}
+
+		furthestDistance = -1;
+		unsigned int j;
+
+		//see if the current thing is already in there
+		for(j = 0; j < frameSize; j++){
+			if(virtualMemory[j] == NULL){
+				
+				
+
+				virtualMemory[j] = new VirtualFrame(pageRefs[i], 0);
+
+				std::cout << "referencing page " << pageRefs[i] << " ";
+				printVirtualMemory(virtualMemory);
+				std::cout << " PAGE FAULT (no victim page)\n";
+
+				faultCounter++;
+
+				break;
+			} else{
+				if(virtualMemory[j]->page == pageRefs[i]){
+					virtualMemory[j]->counter = 0;
+					break;
+				} else{
+					if(virtualMemory[j]->counter > furthestDistance){
+						replaceIndex = j;
+						furthestDistance = virtualMemory[j]->counter;
+					}
+				}
+			}
+		}
+
+		if(j == frameSize){
+			//the current page is not in the virtual memeory
+			//so page fault occurs
+
+			//replace the thing with the index we found
+			int victimPage = virtualMemory[replaceIndex]->page;
+
+			virtualMemory[replaceIndex]->page = pageRefs[i];
+			virtualMemory[replaceIndex]->counter = 0;
+
+			std::cout << "referencing page " << pageRefs[i] << " ";
+			printVirtualMemory(virtualMemory);
+			std::cout << " PAGE FAULT (victim page " << victimPage << ")\n";
+			faultCounter++;
+
+		}
+	}
+
+	std::cout << "End of LRU simulation ("<< faultCounter << " page faults)\n";
 }
