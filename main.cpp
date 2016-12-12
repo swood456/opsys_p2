@@ -10,8 +10,56 @@
 const int t_memmove = 1; //time to move 1 frame of memory in defrag
 const int memSize = 256; //size of the memory block
 
+struct FindHomeForNextFit {
+	int operator() (int startLoc, int numFrames, std::vector<char> memory){
+		//std::cout << "    starting find home\n";
+		for(int i = startLoc; i < memSize; i++){
+			if(memory[i] == '.'){
+				//see if we have a large enough block of memory to save this process
+				int blockSize = 0;
+
+				int j = i;
+				while(memory[j] == '.' && j < memSize){
+					j++;
+					blockSize++;
+				}
+				//std::cout << "blockSize = " << blockSize << "starting at index i=" << i << " numFrames=" << numFrames << std::endl;
+				if(blockSize >= numFrames){
+					//we found a match
+					return i;
+				} else{
+					i = j;
+				}
 
 
+			}
+		}
+
+		for(int i = 0; i < startLoc; i++){
+			if(memory[i] == '.'){
+				//see if we have a large enough block of memory to save this process
+				int blockSize = 0;
+
+				int j = i;
+				while(memory[j] == '.' && j < memSize){
+					j++;
+					blockSize++;
+				}
+				//std::cout << "     blockSize = " << blockSize << "starting at index i=" << i << " numFrames=" << numFrames << std::endl;
+
+				if(blockSize >= numFrames){
+					//we found a match
+					return i;
+				} else{
+					i = j;
+				}
+
+
+			}
+		}
+		return -1;
+	}
+};
 
 class Process
 {
@@ -259,7 +307,8 @@ void removeFromMemory(char processName, std::vector<char>& memory){
 	}
 }
 
-void Contiguous_Next_Fit(std::list<Process> processes){
+template <typename Algo>
+void SimulateContiguous(std::list<Process> processes, Algo placementalgorithm ){
 	int curTime = 0;
 	std::vector<char> memory(memSize, '.');
 	int freeMemory = memSize;
@@ -302,8 +351,8 @@ void Contiguous_Next_Fit(std::list<Process> processes){
 
 				} else{
 					//determine if there is enough memory in a single block for this thing
-					//std::cout << "   startloc: " << lastSaved << std::endl; 
-					int storeLoc = findHomeForNextFit(lastSaved, itr->numFrames, memory);
+					//std::cout << "   startloc: " << lastSaved << std::endl;
+					int storeLoc = placementalgorithm(lastSaved, itr->numFrames, memory);
 
 
 					if(storeLoc == -1){
@@ -376,4 +425,9 @@ void Contiguous_Next_Fit(std::list<Process> processes){
 	}
 
 	std::cout << "time " << curTime + defragTime - 1 << "ms: Simulator ended (Contiguous -- Next-Fit)\n";
+}
+
+void Contiguous_Next_Fit(std::list<Process> processes) {
+	struct FindHomeForNextFit fhfnf;
+	SimulateContiguous(processes, fhfnf);
 }
