@@ -694,7 +694,7 @@ void VirtualOPT(std::vector<int> pageRefs){
 							) {
 							furthestDistance = k - i;
 							replaceIndex = j;
-							break;
+							k = pageRefs.size();
 						}
 					}
 				} else {
