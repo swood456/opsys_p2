@@ -687,7 +687,11 @@ void VirtualOPT(std::vector<int> pageRefs){
 			} else{
 				if(virtualMemory[j]->page != pageRefs[i]){
 					for (unsigned int k = i + 1; k < pageRefs.size(); ++k) {
-						if (pageRefs[k] == virtualMemory[j]->page && k-i > furthestDistance) {
+						if (pageRefs[k] == virtualMemory[j]->page
+							&& (k-i > furthestDistance
+								|| k-i == furthestDistance
+								&& virtualMemory[j]->page < virtualMemory[replaceIndex]->page)
+							) {
 							furthestDistance = k - i;
 							replaceIndex = j;
 							break;
