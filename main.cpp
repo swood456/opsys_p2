@@ -7,6 +7,7 @@
 #include <algorithm>
 
 const int t_memmove = 1; //time to move 1 frame of memory in defrag
+const int memSize = 256; //size of the memory block
 
 
 
@@ -97,9 +98,9 @@ int main(int argc, char* argv[]){
 	std::string line;
 
 	//get the number of processes
-	int numProcesses;
+	//int numProcesses;
 	std::getline(inFile, line);
-	numProcesses = atoi(line.c_str());
+	//numProcesses = atoi(line.c_str());
 
 	char processName;
 	int numMemFrames;
@@ -147,13 +148,13 @@ int main(int argc, char* argv[]){
 		}
 	}
 	//checking
-	for(int i = 0; i < processes.size(); i++){
+	/*for(int i = 0; i < processes.size(); i++){
 		std::cout << processes[i].name << " " << processes[i].numFrames << " ";
 		for(int j = 0; j < processes[i].arrivalRunTimes.size(); j++){
 			std::cout << processes[i].arrivalRunTimes[j].first << "/" << processes[i].arrivalRunTimes[j].second << " ";
 		}
 		std::cout << '\n';
-	}
+	}*/
 
 
 
@@ -167,13 +168,13 @@ int main(int argc, char* argv[]){
 
 		//worst-fit
 
-for(int i = 0; i < processes.size(); i++){
+/*for(int i = 0; i < processes.size(); i++){
 		std::cout << processes[i].name << " " << processes[i].numFrames << " ";
 		for(int j = 0; j < processes[i].arrivalRunTimes.size(); j++){
 			std::cout << processes[i].arrivalRunTimes[j].first << "/" << processes[i].arrivalRunTimes[j].second << " ";
 		}
 		std::cout << '\n';
-	}
+	}*/
 
 	//Non-contiguous Memory Management
 
@@ -186,7 +187,7 @@ for(int i = 0; i < processes.size(); i++){
 
 void Contiguous_Next_Fit(std::vector<Process> processes){
 	int curTime = 0;
-
+	std::vector<char> memory(memSize, '.');
 	
 	//sort the process array
 	std::sort(processes.begin(), processes.end());
