@@ -7,6 +7,9 @@
 
 const int t_memmove = 1; //time to move 1 frame of memory in defrag
 
+
+
+
 class Process
 {
 public:
@@ -23,6 +26,7 @@ public:
 	std::vector<std::pair<int, int> > arrivalRunTimes;
 };
 
+void Contiguous_Next_Fit(std::vector<Process>);
 
 void printMemoryDiagram(std::vector<char> memory){
 	//first, print the top line
@@ -124,7 +128,7 @@ int main(int argc, char* argv[]){
 
 	//do Contiguous Memory Management
 		//next-fit
-
+	Contiguous_Next_Fit(processes);
 		//best-fit
 
 		//worst-fit
@@ -138,4 +142,8 @@ int main(int argc, char* argv[]){
 	//virtual memory
 
 	return EXIT_SUCCESS;
+}
+
+void Contiguous_Next_Fit(std::vector<Process> processes){
+	std::cout << "time 0ms: Simulator started (Contiguous -- Next-Fit)\n";
 }
