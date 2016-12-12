@@ -26,8 +26,16 @@ int main(int argc, char* argv[]){
 	//check command line arguments
 
 	//parse input file
+	//file format is NAME NUM_FRAMES ARRIVALTIME_0/RUNTIME_0 ARRIVALTIME_1/RUNTIME_1 ...
+
+	//notes start on 11-14
 
 	//do Contiguous Memory Management
+		//next-fit
+
+		//best-fit
+
+		//worst-fit
 
 
 
