@@ -11,6 +11,10 @@ const int t_memmove = 1; //time to move 1 frame of memory in defrag
 const int memSize = 256; //size of the memory block
 
 struct FindHomeForNextFit {
+	std::string name() {
+		return "Next-Fit";
+	}
+
 	int operator() (int startLoc, int numFrames, std::vector<char> memory){
 		//std::cout << "    starting find home\n";
 		for(int i = startLoc; i < memSize; i++){
@@ -320,7 +324,7 @@ void SimulateContiguous(std::list<Process> processes, Algo placementalgorithm ){
 	//std::sort(processes.begin(), processes.end());
 	processes.sort();
 
-	std::cout << "time 0ms: Simulator started (Contiguous -- Next-Fit)\n";
+	std::cout << "time 0ms: Simulator started (Contiguous -- " << placementalgorithm.name() << ")\n";
 
 	while(processes.size() > 0){
 
@@ -424,7 +428,7 @@ void SimulateContiguous(std::list<Process> processes, Algo placementalgorithm ){
 		curTime++;
 	}
 
-	std::cout << "time " << curTime + defragTime - 1 << "ms: Simulator ended (Contiguous -- Next-Fit)\n";
+	std::cout << "time " << curTime + defragTime - 1 << "ms: Simulator ended (Contiguous -- " << placementalgorithm.name() << ")\n";
 }
 
 void Contiguous_Next_Fit(std::list<Process> processes) {
