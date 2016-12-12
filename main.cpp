@@ -21,7 +21,7 @@ struct FindHomeForWorstFit {
 		for (int i = 0; i < memSize; i++) {
 			if (memory[i] == '.') {
 				int curSize = 0;
-				for (int j = i; j < memSize && memory[j] == '.'; i++) {
+				for (int j = i; j < memSize && memory[j] == '.'; j++) {
 					curSize++;
 				}
 
