@@ -201,6 +201,7 @@ void NonContiguous(std::list<Process>);
 
 
 void VirtualLRU(std::vector<int>);
+void VirtualOPT(std::vector<int>);
 void printMemoryDiagram(std::vector<char> memory){
 	//first, print the top line
 
@@ -319,6 +320,8 @@ int main(int argc, char* argv[]){
 
 	//virtual memory
 		VirtualLRU(virtualReferences);
+
+		VirtualOPT(virtualReferences);
 
 	return EXIT_SUCCESS;
 }
@@ -570,7 +573,7 @@ void printVirtualMemory(std::vector<VirtualFrame*> virtualMemory){
 		if(virtualMemory[i] == NULL){
 			std::cout << " .";
 		} else{
-			
+
 			std::cout << " " <<virtualMemory[i]->page;
 		}
 	}
@@ -582,7 +585,7 @@ void printVirtualMemory(std::vector<VirtualFrame*> virtualMemory){
 void VirtualLRU(std::vector<int> pageRefs){
 
 	std::cout << "Simulating LRU with fixed frame size of " << frameSize << std::endl;
-	
+
 	std::vector<VirtualFrame*> virtualMemory (frameSize, NULL);
 
 	int replaceIndex;
@@ -605,8 +608,8 @@ void VirtualLRU(std::vector<int> pageRefs){
 		//see if the current thing is already in there
 		for(j = 0; j < frameSize; j++){
 			if(virtualMemory[j] == NULL){
-				
-				
+
+
 
 				virtualMemory[j] = new VirtualFrame(pageRefs[i], 0);
 
@@ -649,4 +652,68 @@ void VirtualLRU(std::vector<int> pageRefs){
 	}
 
 	std::cout << "End of LRU simulation ("<< faultCounter << " page faults)\n";
+}
+
+void VirtualOPT(std::vector<int> pageRefs){
+
+	std::cout << "Simulating OPT with fixed frame size of " << frameSize << std::endl;
+
+	std::vector<VirtualFrame*> virtualMemory (frameSize, NULL);
+
+	int replaceIndex;
+	int furthestDistance;
+
+	int faultCounter = 0;
+
+	for(unsigned int i = 0; i < pageRefs.size(); i++){
+		furthestDistance = -1;
+		unsigned int j;
+
+		//see if the current thing is already in there
+		for(j = 0; j < frameSize; j++){
+			if(virtualMemory[j] == NULL){
+
+
+
+				virtualMemory[j] = new VirtualFrame(pageRefs[i], 0);
+
+				std::cout << "referencing page " << pageRefs[i] << " ";
+				printVirtualMemory(virtualMemory);
+				std::cout << " PAGE FAULT (no victim page)\n";
+
+				faultCounter++;
+
+				break;
+			} else{
+				if(virtualMemory[j]->page != pageRefs[i]){
+					for (unsigned int k = i + 1; k < pageRefs.size(); ++k) {
+						if (pageRefs[k] == virtualMemory[j]->page && k-i > furthestDistance) {
+							furthestDistance = k - i;
+							replaceIndex = j;
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		if(j == frameSize){
+			//the current page is not in the virtual memeory
+			//so page fault occurs
+
+			//replace the thing with the index we found
+			int victimPage = virtualMemory[replaceIndex]->page;
+
+			virtualMemory[replaceIndex]->page = pageRefs[i];
+			virtualMemory[replaceIndex]->counter = 0;
+
+			std::cout << "referencing page " << pageRefs[i] << " ";
+			printVirtualMemory(virtualMemory);
+			std::cout << " PAGE FAULT (victim page " << victimPage << ")\n";
+			faultCounter++;
+
+		}
+	}
+
+	std::cout << "End of OPT simulation ("<< faultCounter << " page faults)\n";
 }
