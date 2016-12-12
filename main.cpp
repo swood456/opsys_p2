@@ -96,9 +96,9 @@ struct FindHomeForBestFit {
 		return "Best-Fit";
 	}
 
-	int operator() (int numFrames, std::vector<char> memory){
+	int operator() (int startLoc, int numFrames, std::vector<char> memory){
 		int minBlockSize = 0;  //holds the smallest size of free partition
-		int startLoc = -1;
+		startLoc = -1;
 		for (int i=0; i<memSize; i++) {
 			//if find a '.' determine the size of that free parititon block
 			if (memory[i] == '.') {
@@ -287,13 +287,15 @@ int main(int argc, char* argv[]){
 
 	//do Contiguous Memory Management
 		//next-fit
-	// Contiguous_Next_Fit(processes);
-	Contiguous_Next_Fit(processes);
-	//best-fit
-	Contiguous_Best_Fit(processes);
-	Contiguous_Worst_Fit(processes);
+		Contiguous_Next_Fit(processes);
+		std::cout << std::endl;
+		//best-fit
+		Contiguous_Best_Fit(processes);
+		std::cout << std::endl;
 
 		//worst-fit
+		Contiguous_Worst_Fit(processes);
+		std::cout << std::endl;
 
 /*for(int i = 0; i < processes.size(); i++){
 		std::cout << processes[i].name << " " << processes[i].numFrames << " ";
