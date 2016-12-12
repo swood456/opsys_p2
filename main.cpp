@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include <cstring>
+#include <algorithm>
 
 const int t_memmove = 1; //time to move 1 frame of memory in defrag
 
@@ -24,7 +25,13 @@ public:
 	char name;
 	int numFrames;
 	std::vector<std::pair<int, int> > arrivalRunTimes;
+
+	bool operator < (const Process& str) const{
+		return name < str.name;
+	}
 };
+
+
 
 void Contiguous_Next_Fit(std::vector<Process>);
 
@@ -124,6 +131,8 @@ int main(int argc, char* argv[]){
 	}
 
 
+
+
 	//notes start on 11-14
 
 	//do Contiguous Memory Management
@@ -133,7 +142,13 @@ int main(int argc, char* argv[]){
 
 		//worst-fit
 
-
+for(int i = 0; i < processes.size(); i++){
+		std::cout << processes[i].name << " " << processes[i].numFrames << " ";
+		for(int j = 0; j < processes[i].arrivalRunTimes.size(); j++){
+			std::cout << processes[i].arrivalRunTimes[j].first << "/" << processes[i].arrivalRunTimes[j].second << " ";
+		}
+		std::cout << '\n';
+	}
 
 	//Non-contiguous Memory Management
 
@@ -145,5 +160,28 @@ int main(int argc, char* argv[]){
 }
 
 void Contiguous_Next_Fit(std::vector<Process> processes){
+	int curTime = 0;
+
+	
+	//sort the process array
+	std::sort(processes.begin(), processes.end());
+
 	std::cout << "time 0ms: Simulator started (Contiguous -- Next-Fit)\n";
+
+	while(processes.size() > 0){
+		
+		//go through each process in the array
+		std::vector<Process>::iterator itr;
+
+		for(itr = processes.begin(); itr != processes.end(); itr++){
+			//determine if this processes needs something
+			if(itr->arrivalRunTimes[0].first == curTime){
+				//process arriving
+
+				//do the arrival stuff
+			}
+		}
+
+	}
+	
 }
