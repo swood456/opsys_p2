@@ -6,7 +6,6 @@
 #include <cstring>
 #include <algorithm>
 #include <list>
-
 #include <stdio.h>
 
 const int t_memmove = 1; //time to move 1 frame of memory in defrag
@@ -341,10 +340,10 @@ int main(int argc, char* argv[]){
 
 	//make a vector of ints to correspond to the input from the file
 	std::vector<int> virtualReferences;
-	
+
 	//read in the file into a string
 	std::getline(inFile, line);
-	
+
 	//break the string up into tokens divided by spaces
 	char * token = strtok(const_cast<char*>(line.c_str()), " ");
 
@@ -431,7 +430,7 @@ void SimulateContiguous(std::list<Process> processes, Algo placementalgorithm ){
 				//announce that a process is arriving
 				std::cout << "time " << curTime + defragTime<< "ms: Process " <<
 					itr->name << " arrived (requires " << itr->numFrames << " frames)\n";
-				
+
 				if(itr->numFrames > freeMemory){
 					//there is not enough memory for this process no matter what
 					std::cout << "time " << curTime + defragTime << "ms: Cannot place process "
@@ -455,7 +454,7 @@ void SimulateContiguous(std::list<Process> processes, Algo placementalgorithm ){
 						// contiguous block of memory for the process
 						std::cout << "time " << curTime + defragTime << "ms: Cannot place process "
 							<< itr->name << " -- starting defragmentation\n";
-						
+
 						//run defrag
 						std::list<char> processesMoved;
 						unsigned int numMoves = defragMemory(memory, processesMoved);
@@ -851,21 +850,6 @@ void VirtualOPT(std::vector<int> pageRefs){
 				if (virtualMemory[j]->page == pageRefs[i]) {
 					break;
 				}
-				// if(virtualMemory[j]->page != pageRefs[i]){
-				// 	for (unsigned int k = i + 1; k < pageRefs.size(); ++k) {
-				// 		if (pageRefs[k] == virtualMemory[j]->page
-				// 			&& (k-i > furthestDistance
-				// 				|| k-i == furthestDistance
-				// 				&& virtualMemory[j]->page < virtualMemory[replaceIndex]->page)
-				// 			) {
-				// 			furthestDistance = k - i;
-				// 			replaceIndex = j;
-				// 			k = pageRefs.size();
-				// 		}
-				// 	}
-				// } else {
-				// 	break;
-				// }
 			}
 		}
 
@@ -880,9 +864,7 @@ void VirtualOPT(std::vector<int> pageRefs){
 						break;
 					}
 				}
-				// if (k + i + 1 == pageRefs.size())
-				// 	k = 0;
-				std::cout << "index " << j << " distance is " << k << std::endl;
+
 				if (furthestDistance < (int)k || (furthestDistance == (int)k && virtualMemory[j]->page < virtualMemory[replaceIndex]->page)) {
 					furthestDistance = k;
 					replaceIndex = j;
