@@ -685,9 +685,9 @@ void VirtualOPT(std::vector<int> pageRefs){
 
 				break;
 			} else{
-				if (virtualMemory[j]->page == pageRefs[i]) {
-					break;
-				}
+				// if (virtualMemory[j]->page == pageRefs[i]) {
+				// 	break;
+				// }
 				if(virtualMemory[j]->page != pageRefs[i]){
 					for (unsigned int k = i + 1; k < pageRefs.size(); ++k) {
 						if (pageRefs[k] == virtualMemory[j]->page
