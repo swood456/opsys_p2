@@ -53,15 +53,13 @@ struct FindHomeForNextFit {
 					j++;
 					blockSize++;
 				}
-				//std::cout << "blockSize = " << blockSize << "starting at index i=" << i << " numFrames=" << numFrames << std::endl;
+
 				if(blockSize >= numFrames){
 					//we found a match
 					return i;
 				} else{
 					i = j;
 				}
-
-
 			}
 		}
 
@@ -75,7 +73,6 @@ struct FindHomeForNextFit {
 					j++;
 					blockSize++;
 				}
-				//std::cout << "     blockSize = " << blockSize << "starting at index i=" << i << " numFrames=" << numFrames << std::endl;
 
 				if(blockSize >= numFrames){
 					//we found a match
@@ -83,8 +80,6 @@ struct FindHomeForNextFit {
 				} else{
 					i = j;
 				}
-
-
 			}
 		}
 		return -1;
@@ -119,7 +114,7 @@ struct FindHomeForBestFit {
 				i = j;
 			}
 		}
-		
+
 		return startLoc;
 	}
 };
@@ -145,7 +140,8 @@ public:
 };
 
 // defragment memory function for contiguous memory schemes
-// returns time required to defragment memory.
+// 	returns number of processes moved
+//	 as well as a list of processes moved (passed by reference)
 unsigned int defragMemory(std::vector<char>& memory, std::list<char>& procsMoved) {
 	bool keepGoing = true;	// tell function to continue
 	unsigned int pindex = 0;	// keeps track of the first period found
@@ -161,6 +157,8 @@ unsigned int defragMemory(std::vector<char>& memory, std::list<char>& procsMoved
 			for (i = pindex; i < memory.size(); ++i ) {
 				if (memory[i] != '.') {
 					if (procsMoved.back() != memory[i]) {
+						// add this process to the list of moved processes
+						//	if it's not already in the list
 						procsMoved.push_back(memory[i]);
 					}
 					memory[pindex] = memory[i];
@@ -179,8 +177,7 @@ unsigned int defragMemory(std::vector<char>& memory, std::list<char>& procsMoved
 		pindex++;
 	}
 
-	// return number of frames moved multiplied
-	//	by the amount of time required  to move each frame.
+	// return number of frames moved
 	return numFramesMoved;
 }
 
@@ -235,19 +232,15 @@ int main(int argc, char* argv[]){
 	while(std::getline(inFile, line)){
 		if(line[0] != '#' && line[0] != ' ' && line[0] != '	' && line[0] != '\n' && line[0] != '\0'){
 
-			//std::cout << "got line " << line << std::endl;
 			std::list<std::pair<int, int> > arrivalRunTimes;
 
 			processName = line[0];
 
 			line.erase(0,2);
-			//get numMemFrames;
 
 			char * token = strtok(const_cast<char*>(line.c_str()), " ");
 
 			numMemFrames = atoi(token);
-
-			//std:: cout << "process name " << processName << " numMemFrames = " << numMemFrames << std::endl;
 
 			int arrivalTime;
 			int runTime;
@@ -255,11 +248,9 @@ int main(int argc, char* argv[]){
 			token = strtok(NULL, " /");
 			while(token != NULL){
 				arrivalTime = atoi(token);
-				//std::cout << " token: |" << token <<"|\n";
 				token = strtok(NULL, " /");
 				runTime = atoi(token);
 
-				//std::cout << " arrival time: " << arrivalTime << " run time: " << runTime << std::endl;
 				arrivalRunTimes.push_back(std::make_pair(arrivalTime, runTime));
 
 
@@ -271,17 +262,6 @@ int main(int argc, char* argv[]){
 
 		}
 	}
-	//checking
-	/*for(int i = 0; i < processes.size(); i++){
-		std::cout << processes[i].name << " " << processes[i].numFrames << " ";
-		for(int j = 0; j < processes[i].arrivalRunTimes.size(); j++){
-			std::cout << processes[i].arrivalRunTimes[j].first << "/" << processes[i].arrivalRunTimes[j].second << " ";
-		}
-		std::cout << '\n';
-	}*/
-
-
-
 
 	//notes start on 11-14
 
@@ -297,17 +277,7 @@ int main(int argc, char* argv[]){
 		Contiguous_Worst_Fit(processes);
 		std::cout << std::endl;
 
-/*for(int i = 0; i < processes.size(); i++){
-		std::cout << processes[i].name << " " << processes[i].numFrames << " ";
-		for(int j = 0; j < processes[i].arrivalRunTimes.size(); j++){
-			std::cout << processes[i].arrivalRunTimes[j].first << "/" << processes[i].arrivalRunTimes[j].second << " ";
-		}
-		std::cout << '\n';
-	}*/
-
 	//Non-contiguous Memory Management
-
-
 
 	//virtual memory
 
@@ -372,7 +342,6 @@ void SimulateContiguous(std::list<Process> processes, Algo placementalgorithm ){
 
 				} else{
 					//determine if there is enough memory in a single block for this thing
-					//std::cout << "   startloc: " << lastSaved << std::endl;
 					int storeLoc = placementalgorithm(lastSaved, itr->numFrames, memory);
 
 
