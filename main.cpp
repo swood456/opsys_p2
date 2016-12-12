@@ -10,6 +10,32 @@
 const int t_memmove = 1; //time to move 1 frame of memory in defrag
 const int memSize = 256; //size of the memory block
 
+struct FindHomeForWorstFit {
+	std::string name() {
+		return "Worst-Fit";
+	}
+
+	int operator() (int startLoc, int numFrames, std::vector<char> memory) {
+		int finalLoc = -1;
+		int biggestSize = 0;
+		for (int i = 0; i < memSize; i++) {
+			if (memory[i] == '.') {
+				int curSize = 0;
+				for (int j = i; j < memSize && memory[j] == '.'; j++) {
+					curSize++;
+				}
+
+				if (curSize >= numFrames && biggestSize < curSize) {
+					biggestSize = curSize;
+					finalLoc = i;
+				}
+			}
+		}
+
+		return finalLoc;
+	}
+};
+
 struct FindHomeForNextFit {
 	std::string name() {
 		return "Next-Fit";
@@ -158,8 +184,9 @@ unsigned int defragMemory(std::vector<char>& memory, std::list<char>& procsMoved
 	return numFramesMoved;
 }
 
-void Contiguous_Next_Fit(std::list<Process> processes);
-void Contiguous_Best_Fit(std::list<Process> processes);
+void Contiguous_Next_Fit(std::list<Process>);
+void Contiguous_Best_Fit(std::list<Process>);
+void Contiguous_Worst_Fit(std::list<Process>);
 
 void printMemoryDiagram(std::vector<char> memory){
 	//first, print the top line
@@ -261,8 +288,10 @@ int main(int argc, char* argv[]){
 	//do Contiguous Memory Management
 		//next-fit
 	// Contiguous_Next_Fit(processes);
-		//best-fit
-		Contiguous_Best_Fit(processes);
+	Contiguous_Next_Fit(processes);
+	//best-fit
+	Contiguous_Best_Fit(processes);
+	Contiguous_Worst_Fit(processes);
 
 		//worst-fit
 
@@ -422,8 +451,12 @@ void Contiguous_Next_Fit(std::list<Process> processes) {
 	SimulateContiguous(processes, fhfnf);
 }
 
-
 void Contiguous_Best_Fit(std::list<Process> processes){
 	struct FindHomeForBestFit fhfbf;
 	SimulateContiguous(processes, fhfbf);
+}
+
+void Contiguous_Worst_Fit(std::list<Process> processes) {
+	struct FindHomeForWorstFit fhfwf;
+	SimulateContiguous(processes, fhfwf);
 }
