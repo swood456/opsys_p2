@@ -197,17 +197,18 @@ int main(int argc, char* argv[]){
 }
 
 int findHomeForNextFit(int startLoc, int numFrames, std::vector<char> memory){
+	std::cout << "    starting find home\n";
 	for(int i = startLoc; i < memSize; i++){
 		if(memory[i] == '.'){
 			//see if we have a large enough block of memory to save this process
-			int blockSize = 1;
+			int blockSize = 0;
 
 			int j = i;
-			while(j == '.' && j < memSize){
+			while(memory[j] == '.' && j < memSize){
 				j++;
 				blockSize++;
 			}
-
+			std::cout << "blockSize = " << blockSize << "starting at index i=" << i << " numFrames=" << numFrames << std::endl;
 			if(blockSize >= numFrames){
 				//we found a match
 				return i;
@@ -225,7 +226,7 @@ int findHomeForNextFit(int startLoc, int numFrames, std::vector<char> memory){
 			int blockSize = 1;
 
 			int j = i;
-			while(j == '.' && j < memSize){
+			while(memory[j] == '.' && j < memSize){
 				j++;
 				blockSize++;
 			}
@@ -287,17 +288,21 @@ void Contiguous_Next_Fit(std::list<Process> processes){
 
 				} else{
 					//determine if there is enough memory in a single block for this thing
+					std::cout << "   startloc: " << lastSaved << std::endl; 
 					int storeLoc = findHomeForNextFit(lastSaved, itr->numFrames, memory);
 
 
 					if(storeLoc == -1){
+						std::cout << "time " << curTime + defragTime << "ms: Cannot place process "<< itr->name << " -- starting defragmentation\n";
 						//defrag
+						std::list<char> processesMoved;
 						unsigned int numMoves = defragMemory(memory);
 
 						//update timeing for everything
 						defragTime += numMoves * t_memmove;
 
 						//set the store loc to the new thing
+						std::cout << "time "<< curTime + defragTime << "ms: Defragmentation complete (moved " << itr->name << " frames: B, C, D, E, F)\n";
 
 					}
 
