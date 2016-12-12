@@ -320,10 +320,12 @@ int main(int argc, char* argv[]){
 		// NonContiguous(processes);
 
 	//virtual memory
-		// VirtualLRU(virtualReferences);
-		VirtualLFU(virtualReferences);
-
 		VirtualOPT(virtualReferences);
+		std::cout << std::endl;
+		VirtualLRU(virtualReferences);
+		std::cout << std::endl;
+		VirtualLFU(virtualReferences);
+		std::cout << std::endl;
 
 	return EXIT_SUCCESS;
 }
