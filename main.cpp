@@ -666,7 +666,7 @@ void VirtualOPT(std::vector<int> pageRefs){
 	int faultCounter = 0;
 
 	for(unsigned int i = 0; i < pageRefs.size(); i++){
-		furthestDistance = -1;
+		furthestDistance = 0;
 		unsigned int j;
 
 		//see if the current thing is already in there
@@ -685,6 +685,9 @@ void VirtualOPT(std::vector<int> pageRefs){
 
 				break;
 			} else{
+				if (virtualMemory[j]->page == pageRefs[i]) {
+					break;
+				}
 				if(virtualMemory[j]->page != pageRefs[i]){
 					for (unsigned int k = i + 1; k < pageRefs.size(); ++k) {
 						if (pageRefs[k] == virtualMemory[j]->page
@@ -706,6 +709,10 @@ void VirtualOPT(std::vector<int> pageRefs){
 		if(j == frameSize){
 			//the current page is not in the virtual memeory
 			//so page fault occurs
+
+			// for (j = 0; j < frameSize; ++j) {
+			//
+			// }
 
 			//replace the thing with the index we found
 			int victimPage = virtualMemory[replaceIndex]->page;
