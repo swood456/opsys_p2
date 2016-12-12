@@ -35,7 +35,7 @@ public:
 
 // defragment memory function for contiguous memory schemes
 // returns time required to defragment memory.
-unsigned int defragMemory(std::vector<char>& memory) {
+unsigned int defragMemory(std::vector<char>& memory, std::list<char>& procsMoved) {
 	bool keepGoing = true;	// tell function to continue
 	unsigned int pindex = 0;	// keeps track of the first period found
 	unsigned int numFramesMoved = 0;	// keeps track of number of frames moved
@@ -49,6 +49,9 @@ unsigned int defragMemory(std::vector<char>& memory) {
 			unsigned int i;
 			for (i = pindex; i < memory.size(); ++i ) {
 				if (memory[i] != '.') {
+					if (procsMoved.back() != memory[i]) {
+						procsMoved.push_back(memory[i]);
+					}
 					memory[pindex] = memory[i];
 					memory[i] = '.';
 					numFramesMoved++;
