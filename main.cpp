@@ -367,6 +367,7 @@ int main(int argc, char* argv[]){
 
 	//Non-contiguous Memory Management
 		NonContiguous(processes);
+		std::cout << std::endl;
 
 	//function calls to do virtual memory
 		VirtualOPT(virtualReferences);
@@ -374,7 +375,6 @@ int main(int argc, char* argv[]){
 		VirtualLRU(virtualReferences);
 		std::cout << std::endl;
 		VirtualLFU(virtualReferences);
-		std::cout << std::endl;
 
 	return EXIT_SUCCESS;
 }
