@@ -419,6 +419,35 @@ void SimulateContiguous(std::list<Process> processes, Algo placementalgorithm ){
 		//go through each process in the list
 		std::list<Process>::iterator itr;
 
+
+			////////////
+			//FINISHES//
+			////////////
+		for(itr = processes.begin(); itr != processes.end(); itr++){
+			if(curTime == itr->arrivalRunTimes.front().first + itr->arrivalRunTimes.front().second){
+				//the process is finished with its run, so remove it from memory
+
+				//first remove from memory
+				removeFromMemory(itr->name, memory);
+
+				//print that we removed it from memory
+				std::cout << "time " << curTime + defragTime << "ms: Process "<<itr->name<<" removed:\n";
+				printMemoryDiagram(memory);
+				freeMemory += itr->numFrames;
+
+				//remove this arrival from the process's list of arrivals
+				itr->arrivalRunTimes.pop_front();
+
+				//determine if there are any more processes to run for this process
+				if(itr->arrivalRunTimes.size() == 0){
+					//if there are no more processes to run, remove this process
+					processes.erase(itr);
+					itr--;
+				}
+
+			}
+		}
+
 		for(itr = processes.begin(); itr != processes.end(); itr++){
 			//////////
 			//ARIVAL//
@@ -500,33 +529,9 @@ void SimulateContiguous(std::list<Process> processes, Algo placementalgorithm ){
 				}
 
 			}
-
-			////////////
-			//FINISHES//
-			////////////
-			else if(curTime == itr->arrivalRunTimes.front().first + itr->arrivalRunTimes.front().second){
-				//the process is finished with its run, so remove it from memory
-
-				//first remove from memory
-				removeFromMemory(itr->name, memory);
-
-				//print that we removed it from memory
-				std::cout << "time " << curTime + defragTime << "ms: Process "<<itr->name<<" removed:\n";
-				printMemoryDiagram(memory);
-				freeMemory += itr->numFrames;
-
-				//remove this arrival from the process's list of arrivals
-				itr->arrivalRunTimes.pop_front();
-
-				//determine if there are any more processes to run for this process
-				if(itr->arrivalRunTimes.size() == 0){
-					//if there are no more processes to run, remove this process
-					processes.erase(itr);
-					itr--;
-				}
-
-			}
 		}
+
+		
 
 		curTime++;
 	}
@@ -581,6 +586,31 @@ void NonContiguous(std::list<Process> processes){
 		std::list<Process>::iterator itr;
 
 		for(itr = processes.begin(); itr != processes.end(); itr++){
+			////////////
+			//FINISHES//
+			////////////
+			if(curTime == itr->arrivalRunTimes.front().first + itr->arrivalRunTimes.front().second){
+				//the process is done with its rund
+
+				//first remove from memory
+				removeFromMemory(itr->name, memory);
+
+				//print that we removed it from memory
+				std::cout << "time " << curTime << "ms: Process "<<itr->name<<" removed:\n";
+				printMemoryDiagram(memory);
+				freeMemory += itr->numFrames;
+
+				//remove from the list of arrivaltimethings, and remove the process if that list is now empty
+				itr->arrivalRunTimes.pop_front();
+				if(itr->arrivalRunTimes.size() == 0){
+					processes.erase(itr);
+					itr--;
+				}
+
+			}
+		}
+
+		for(itr = processes.begin(); itr != processes.end(); itr++){
 			//////////
 			//ARIVAL//
 			//////////
@@ -616,30 +646,9 @@ void NonContiguous(std::list<Process> processes){
 				}
 
 			}
-
-			////////////
-			//FINISHES//
-			////////////
-			else if(curTime == itr->arrivalRunTimes.front().first + itr->arrivalRunTimes.front().second){
-				//the process is done with its rund
-
-				//first remove from memory
-				removeFromMemory(itr->name, memory);
-
-				//print that we removed it from memory
-				std::cout << "time " << curTime << "ms: Process "<<itr->name<<" removed:\n";
-				printMemoryDiagram(memory);
-				freeMemory += itr->numFrames;
-
-				//remove from the list of arrivaltimethings, and remove the process if that list is now empty
-				itr->arrivalRunTimes.pop_front();
-				if(itr->arrivalRunTimes.size() == 0){
-					processes.erase(itr);
-					itr--;
-				}
-
-			}
 		}
+
+
 
 		curTime++;
 	}
