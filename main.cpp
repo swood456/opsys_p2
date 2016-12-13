@@ -1,3 +1,10 @@
+/*
+	Collaborators:
+	Jason Kraft kraftj3
+	Uyen Uong uongu
+	Stephen Wood woods5
+*/
+
 #include <iostream>
 #include <stdlib.h>
 #include <vector>
@@ -420,9 +427,9 @@ void SimulateContiguous(std::list<Process> processes, Algo placementalgorithm ){
 		std::list<Process>::iterator itr;
 
 
-			////////////
-			//FINISHES//
-			////////////
+		///////////////////////////
+		//WHEN A PRCOESS FINISHES//
+		///////////////////////////
 		for(itr = processes.begin(); itr != processes.end(); itr++){
 			if(curTime == itr->arrivalRunTimes.front().first + itr->arrivalRunTimes.front().second){
 				//the process is finished with its run, so remove it from memory
@@ -449,9 +456,9 @@ void SimulateContiguous(std::list<Process> processes, Algo placementalgorithm ){
 		}
 
 		for(itr = processes.begin(); itr != processes.end(); itr++){
-			//////////
-			//ARIVAL//
-			//////////
+			//////////////////////////
+			//WHEN A PROCESS ARRIVES//
+			//////////////////////////
 
 			//determine if the current time matches the time of an arival
 			if(itr->arrivalRunTimes.front().first == curTime){
